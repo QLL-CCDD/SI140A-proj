@@ -4,12 +4,10 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.ticker import MultipleLocator, MaxNLocator
 
-# Set global style (English labels, clear layout)
 plt.rcParams["font.sans-serif"] = ["Arial", "DejaVu Sans"]
 plt.rcParams["axes.unicode_minus"] = False
 plt.style.use("seaborn-v0_8-whitegrid")
 
-# 1. Load data + Core Logic: Calculate "Amount / Remaining Amount Ratio" (原逻辑不变)
 df = pd.read_excel(
     "C:/Users/pc/Desktop/新建 XLS 工作表 (2).xls", sheet_name="Sheet1", header=None
 )
@@ -19,7 +17,6 @@ total_per_round = df.iloc[1:-1, 15].values.astype(float).round(2)
 n_rounds = len(detail_data)
 grab_order_labels = [f"Order {i+1}" for i in range(15)]
 
-# Calculate ratio (原逻辑不变)
 ratio_matrix = np.zeros_like(detail_data)
 for round_idx in range(n_rounds):
     total = total_per_round[round_idx]
@@ -33,13 +30,11 @@ for round_idx in range(n_rounds):
         ratio_matrix[round_idx, order_idx] = ratio
         remaining -= amount
 
-# Get global ratio range (原逻辑不变)
 all_valid_ratio = ratio_matrix[~np.isnan(ratio_matrix)]
 global_min_ratio = 0.0
 global_max_ratio = min(1.05, np.ceil(all_valid_ratio.max() * 10) / 10)
 
-# 2. Key Modification: Smaller bin width → More bars (方形更多)
-bin_width_ratio = 0.02  # 从0.05改为0.02（2%/区间），柱形数量增加2.5倍
+bin_width_ratio = 0.02
 bin_edges_ratio = np.arange(
     global_min_ratio, global_max_ratio + bin_width_ratio, bin_width_ratio
 )
@@ -51,39 +46,34 @@ fig.suptitle(
     y=0.98,
 )
 
-# 3. Plot: Dense histogram (more bars)
 colors = cm.Set3(np.linspace(0, 1, 15))
 
 for idx, (ax, order_ratio, color) in enumerate(zip(axes.flat, ratio_matrix.T, colors)):
-    # Step 1: Filter valid data (原逻辑不变)
+
     valid_ratio = order_ratio[~np.isnan(order_ratio)]
     total_samples = len(valid_ratio)
     if total_samples == 0:
         ax.set_visible(False)
         continue
 
-    # Step 2: Calculate probability (原逻辑不变，更多区间→更多柱形)
     freq, _ = np.histogram(valid_ratio, bins=bin_edges_ratio)
     prob = freq / total_samples
     bin_centers = bin_edges_ratio[:-1] + bin_width_ratio / 2
 
-    # Step 3: Key metrics (原逻辑不变)
     ratio_mean = np.mean(valid_ratio).round(4)
     ratio_std = np.std(valid_ratio).round(4)
     ratio_max = np.max(valid_ratio).round(4)
     ratio_var = (ratio_std**2).round(6)
 
-    # Step 4: Dense histogram (适配小区间的柱形宽度)
     ax.bar(
         bin_centers,
         prob,
-        width=bin_width_ratio - 0.001,  # 柱形宽度=区间宽度-微小间隙（避免重叠）
+        width=bin_width_ratio - 0.001,
         edgecolor="black",
         alpha=0.8,
         color=color,
     )
 
-    # Step 5: Max Ratio Annotation (原逻辑不变)
     ax.annotate(
         f"Max Ratio: {ratio_max:.4f}",
         xy=(0.05, 0.95),
@@ -96,52 +86,39 @@ for idx, (ax, order_ratio, color) in enumerate(zip(axes.flat, ratio_matrix.T, co
         va="top",
     )
 
-    # Step 6: Axes settings (适配更多柱形，保持可读性)
-    # X-axis: 主刻度不变（0.1），次刻度=区间宽度（0.02），对应每个柱形
     ax.set_xlim(global_min_ratio, global_max_ratio)
-    ax.xaxis.set_major_locator(
-        MultipleLocator(0.1)
-    )  # 主刻度：0, 0.1, ..., 1.0（避免刻度过密）
+    ax.xaxis.set_major_locator(MultipleLocator(0.1))
     ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"{x:.2f}"))
-    ax.xaxis.set_minor_locator(
-        MultipleLocator(bin_width_ratio)
-    )  # 次刻度=区间宽度，对齐柱形
-    ax.tick_params(
-        axis="x", which="minor", color="#cccccc", labelsize=5
-    )  # 次刻度标签缩小
+    ax.xaxis.set_minor_locator(MultipleLocator(bin_width_ratio))
+    ax.tick_params(axis="x", which="minor", color="#cccccc", labelsize=5)
     ax.tick_params(axis="x", which="major", labelsize=9, rotation=30)
 
-    # Y-axis: 下调上限（小区间→单区间概率降低）
-    ax.set_ylim(0, 0.3)  # 从0.5改为0.3，避免柱形过矮导致视觉空洞
-    ax.yaxis.set_major_locator(MultipleLocator(0.05))  # 主刻度：0, 0.05, ..., 0.3
+    ax.set_ylim(0, 0.3)
+    ax.yaxis.set_major_locator(MultipleLocator(0.05))
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, p: f"{y:.2f}"))
 
-    # Step 7: Labels (原逻辑不变)
     ax.set_title(
         f"{grab_order_labels[idx]} (n={total_samples})", fontsize=12, fontweight="bold"
     )
-    if idx >= 10:  # Bottom row: X-label
+    if idx >= 10:
         ax.set_xlabel(
             "Ratio (Amount / Remaining Amount Before Grab)", fontsize=10, labelpad=5
         )
-    if idx % 5 == 0:  # Left column: Y-label
+    if idx % 5 == 0:
         ax.set_ylabel("Probability", fontsize=10, labelpad=5)
 
     ax.grid(axis="y", alpha=0.3)
 
-# 4. Layout adjustment (原逻辑不变)
 plt.tight_layout()
 plt.subplots_adjust(
     top=0.93,
-    hspace=0.5,  # 垂直间距，避免上下子图重叠
-    wspace=0.25,  # 水平间距，适配更多柱形
+    hspace=0.5,
+    wspace=0.25,
 )
 
-# 5. Save image (文件名体现“更多柱形”)
 plt.savefig("dense_bars_ratio_probability.png", dpi=300, bbox_inches="tight")
 plt.show()
 
-# 6. Print statistics (原逻辑不变)
 print("=== Key Statistics (Ratio = Amount / Remaining Amount) - 15 Grab Orders ===")
 order_stats = []
 for i in range(15):

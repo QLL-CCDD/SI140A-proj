@@ -4,26 +4,22 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from matplotlib.ticker import MultipleLocator, MaxNLocator
 
-# Set global style (English labels, clear layout)
 plt.rcParams["font.sans-serif"] = ["Arial", "DejaVu Sans"]
 plt.rcParams["axes.unicode_minus"] = False
 plt.style.use("seaborn-v0_8-whitegrid")
 
-# 1. Load and prepare data + Calculate global range (for unified axes)
 df = pd.read_excel(
     "C:/Users/pc/Desktop/新建 XLS 工作表 (2).xls", sheet_name="Sheet1", header=None
 )
 
-# Extract all valid data first to get global min/max (for unified X-axis)
 grab_order_data = df.iloc[1:-1, :15].values.astype(float).round(2)
-all_valid_data = grab_order_data[~np.isnan(grab_order_data)]  # All non-NaN data
-global_min = np.floor(all_valid_data.min())  # Unified X: floor of global min
-global_max = np.ceil(all_valid_data.max())  # Unified X: ceil of global max
+all_valid_data = grab_order_data[~np.isnan(grab_order_data)]
+global_min = np.floor(all_valid_data.min())
+global_max = np.ceil(all_valid_data.max())
 grab_order_labels = [f"Order {i+1}" for i in range(15)]
 
-# 2. Fixed parameters (unified axes + consistent bins)
 bin_width = 0.50
-bin_edges = np.arange(global_min, global_max + bin_width, bin_width)  # Unified bins
+bin_edges = np.arange(global_min, global_max + bin_width, bin_width)
 bins = len(bin_edges) - 1
 fig, axes = plt.subplots(3, 5, figsize=(20, 12))
 fig.suptitle(
@@ -33,31 +29,26 @@ fig.suptitle(
     y=0.98,
 )
 
-# 3. Plot (unified axes + std annotation + no overlap)
 colors = cm.Set3(np.linspace(0, 1, 15))
 
 for idx, (ax, order_data, color) in enumerate(
     zip(axes.flat, grab_order_data.T, colors)
 ):
-    # Step 1: Filter valid data
     valid_data = order_data[~np.isnan(order_data)].round(2)
     total_samples = len(valid_data)
     if total_samples == 0:
-        ax.set_visible(False)  # Hide empty subplots
+        ax.set_visible(False)
         continue
 
-    # Step 2: Calculate probability (sum=1, unified bins)
     freq, _ = np.histogram(valid_data, bins=bin_edges)
-    prob = freq / total_samples  # Sum=1
+    prob = freq / total_samples
     bin_centers = bin_edges[:-1] + bin_width / 2
 
-    # Step 3: Key metrics (mean + std + max)
     order_mean = np.mean(valid_data).round(2)
-    order_std = np.std(valid_data).round(2)  # Std (variance = std², more readable)
+    order_std = np.std(valid_data).round(2)
     order_max = np.max(valid_data).round(2)
-    order_var = (order_std**2).round(4)  # Variance (for table)
+    order_var = (order_std**2).round(4)
 
-    # Step 4: Plot probability bar
     ax.bar(
         bin_centers,
         prob,
@@ -67,16 +58,14 @@ for idx, (ax, order_data, color) in enumerate(
         color=color,
     )
 
-    # Step 5: Mean line + legend (combine mean+std to avoid overlap)
     ax.axvline(
         x=order_mean,
         color="red",
         linestyle="--",
         linewidth=2,
-        label=f"Mean: {order_mean:.2f}\nStd: {order_std:.2f}",  # Stack mean+std
+        label=f"Mean: {order_mean:.2f}\nStd: {order_std:.2f}",
     )
 
-    # Step 6: Max amount annotation (top-left, avoid legend overlap)
     ax.annotate(
         f"Max: {order_max:.2f}",
         xy=(0.05, 0.95),
@@ -89,49 +78,41 @@ for idx, (ax, order_data, color) in enumerate(
         va="top",
     )
 
-    # Step 7: Unified axes settings (all subplots same X/Y)
-    # X-axis: unified range + 0.01 precision ticks
     ax.set_xlim(global_min, global_max)
     ax.xaxis.set_major_locator(MaxNLocator(nbins=6, integer=False))
     ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"{x:.2f}"))
     ax.xaxis.set_minor_locator(MultipleLocator(0.02))
     ax.tick_params(axis="x", which="minor", color="#cccccc", labelsize=6)
-    ax.tick_params(axis="x", which="major", labelsize=8, rotation=30)  # Reduce rotation
+    ax.tick_params(axis="x", which="major", labelsize=8, rotation=30)
 
-    # Y-axis: unified probability range (0-0.3, cover all cases)
     ax.set_ylim(0, 0.15)
-    ax.yaxis.set_major_locator(MultipleLocator(0.05))  # Fixed Y ticks: 0,0.05,...0.3
+    ax.yaxis.set_major_locator(MultipleLocator(0.05))
     ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, p: f"{y:.2f}"))
 
-    # Step 8: Labels + legend (avoid overlap)
     ax.set_title(
         f"{grab_order_labels[idx]} (n={total_samples})", fontsize=11, fontweight="bold"
     )
-    # Only show edge labels to reduce redundancy
-    if idx >= 10:  # Bottom row
+
+    if idx >= 10:
         ax.set_xlabel("Red Packet Amount (RMB)", fontsize=9, labelpad=5)
-    if idx % 5 == 0:  # Left column
+    if idx % 5 == 0:
         ax.set_ylabel("Probability", fontsize=9, labelpad=5)
 
-    # Legend: top-right (no overlap with max annotation)
     ax.legend(fontsize=7, loc="upper right", bbox_to_anchor=(0.98, 0.85))
     ax.grid(axis="y", alpha=0.3)
 
-# 4. Adjust layout (sufficient space for labels)
 plt.tight_layout()
 plt.subplots_adjust(
     top=0.93,
-    hspace=0.5,  # Increase vertical space
-    wspace=0.3,  # Increase horizontal space
+    hspace=0.5,
+    wspace=0.3,
 )
 
-# 5. Save image
 plt.savefig(
     "unified_axes_amount_probability_with_std.png", dpi=300, bbox_inches="tight"
 )
 plt.show()
 
-# 6. Print statistics (include mean, std, variance)
 print("=== Key Statistics (Exact to 0.01 RMB) - 15 Grab Orders ===")
 order_stats = []
 for i in range(15):
@@ -143,14 +124,14 @@ for i in range(15):
                 "Sample Size": 0,
                 "Mean (RMB)": "N/A",
                 "Std (RMB)": "N/A",
-                "Variance (RMB²)": "N/A",  # Add variance
+                "Variance (RMB²)": "N/A",
                 "Max (RMB)": "N/A",
             }
         )
         continue
     mean_val = np.mean(valid_data).round(2)
     std_val = np.std(valid_data).round(2)
-    var_val = (std_val**2).round(4)  # Variance = std²
+    var_val = (std_val**2).round(4)
     max_val = np.max(valid_data).round(2)
     order_stats.append(
         {
@@ -158,7 +139,7 @@ for i in range(15):
             "Sample Size": len(valid_data),
             "Mean (RMB)": f"{mean_val:.2f}",
             "Std (RMB)": f"{std_val:.2f}",
-            "Variance (RMB²)": f"{var_val:.4f}",  # Show variance
+            "Variance (RMB²)": f"{var_val:.4f}",
             "Max (RMB)": f"{max_val:.2f}",
         }
     )
