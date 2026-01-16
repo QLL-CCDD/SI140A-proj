@@ -2,8 +2,6 @@ import pandas as pd
 import numpy as np
 from scipy.optimize import minimize
 from scipy.stats import beta as beta_dist
-import warnings
-warnings.filterwarnings('ignore')
 
 # 读取数据
 file_path = 'Data/15/Christmas-15-Processed.xlsx'
