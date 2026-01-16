@@ -79,12 +79,26 @@ def negative_log_likelihood(params):
     return -log_likelihood
 
 
-# 设置初始值
+# 设置初始值 - 在alpha和beta的不同区域尝试
 initial_guesses = [
-    [1.0, 1.0, 2.0],
-    [2.0, 2.0, 2.0],
+
     [0.5, 0.5, 2.0],
+    [0.8, 0.8, 2.0],
+    [1.0, 1.0, 2.0],
+    [1.2, 1.2, 2.0],
+    [1.5, 1.5, 2.0],
+    [2.0, 2.0, 2.0],
+    [3.0, 3.0, 2.0],
+
+    [1.0, 1.5, 2.0],
+    [1.5, 1.0, 2.0],
+    [1.0, 2.0, 2.0],
+    [2.0, 1.0, 2.0],
+
+    [1.0, 1.0, 1.8],
     [1.0, 1.0, 1.9],
+    [1.5, 1.5, 1.9],
+    [2.0, 2.0, 1.9],
 ]
 
 print("=== 开始MLE优化 ===\n")
@@ -98,7 +112,7 @@ for init_idx, initial_guess in enumerate(initial_guesses):
     try:
         result = minimize(negative_log_likelihood, initial_guess, 
                         method='L-BFGS-B', bounds=bounds, 
-                        options={'maxiter': 5000, 'ftol': 1e-8, 'disp': False})
+                        options={'maxiter': 15000, 'ftol': 1e-10, 'disp': False})
         
         if result.success:
             results.append(result)
@@ -133,6 +147,3 @@ print(f"\nBeta({alpha_hat:.4f}, {beta_hat:.4f}) 统计量:")
 print(f"  均值: {mean_beta:.4f}")
 print(f"  标准差: {np.sqrt(var_beta):.4f}")
 
-print(f"\n期望抽取比例 = {mean_beta:.4f} * c / 剩余人数")
-print(f"  例: 剩余15人时, 期望抽取 {mean_beta * c_hat / 15:.4f} * in_i")
-print("="*60)
