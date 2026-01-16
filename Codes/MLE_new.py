@@ -45,7 +45,7 @@ def negative_log_likelihood(params):
         
         # 标准化到 [0, 1] 区间
         y_i = out_i / max_amount
-        if y_i <= 1e-10 or y_i >= 1 - 1e-10:
+        if y_i <= 1e-10 or y_i >= 1 - 1e-8:
             return np.inf
 
         # Beta分布的对数概率密度
@@ -62,7 +62,7 @@ def negative_log_likelihood(params):
 
 # 设置初始值 - 在alpha和beta的不同区域尝试
 initial_guesses = [
-    [0.5, 0.5, 2.0],
+    [0.6, 0.6, 2.0],
     [0.8, 0.8, 2.0],
     [1.0, 1.0, 2.0],
     [1.2, 1.2, 2.0],
