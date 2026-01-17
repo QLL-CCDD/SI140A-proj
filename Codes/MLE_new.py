@@ -4,7 +4,7 @@ from scipy.optimize import minimize
 from scipy.stats import beta as beta_dist
 
 # 读取数据 (第1列: 剩余人数, 第2列: 剩余金额in_i, 第3列: 抽取金额out_i)
-file_path = "Data/15/Christmas15-Dataset.xlsx"
+file_path = "Data/15/Dataset-Train.xlsx"
 df = pd.read_excel(file_path, header=None)
 
 remaining_people = df.iloc[:, 0].values

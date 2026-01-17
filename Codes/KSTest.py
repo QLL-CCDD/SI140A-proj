@@ -4,15 +4,15 @@ from scipy.stats import beta, ks_2samp
 import matplotlib.pyplot as plt
 
 # Estimated model parameters from MLE
-alpha = 1.073695
-beta_param = 1.073695  # Renamed to avoid conflict
+alpha = 1.074343
+beta_param = 1.073088  # Renamed to avoid conflict
 c = 2.000000
 
 # ----------------------------
 # 1. LOAD AND PREPARE VALIDATION DATA
 # ----------------------------
 # Load validation data (replace with your file path)
-file_path = "Data/15/Christmas15-Validate.CSV"
+file_path = "Data/15/Dataset-Validate.CSV"
 val_data = pd.read_csv(file_path)  # Columns: 'out', 'in', 'rem'
 
 # Compute U_i for each observation
@@ -25,6 +25,9 @@ val_data['y'] = val_data['out'] / val_data['U']
 assert (val_data['y'] >= 0).all() and (val_data['y'] <= 1).all(), "Normalized values must be in [0, 1]."
 
 y_real = val_data['y'].values
+for i in range(len(y_real)):
+        if y_real[i] < 0.05:
+            y_real[i] = 0.05
 n_real = len(y_real)
 
 # ----------------------------
@@ -79,7 +82,7 @@ else:
     print("The real data and synthetic data are consistent with coming from the SAME distribution.")
 
 # ----------------------------
-# 4. VISUAL COMPARISON (RECOMMENDED)
+# 4. VISUAL COMPARISON
 # ----------------------------
 def plot_ecdf_comparison(y_real, y_synth, bins=50):
     """Plot ECDFs of both datasets for visual comparison."""
@@ -142,7 +145,7 @@ def plot_ecdf_comparison(y_real, y_synth, bins=50):
 plot_ecdf_comparison(y_real, y_synth, bins=30)
 
 # ----------------------------
-# 5. MULTIPLE SIMULATIONS FOR ROBUSTNESS (OPTIONAL)
+# 5. MULTIPLE SIMULATIONS FOR ROBUSTNESS
 # ----------------------------
 def multiple_ks_simulations(y_real, n_simulations=100, seed_start=100):
     """
@@ -199,4 +202,4 @@ def multiple_ks_simulations(y_real, n_simulations=100, seed_start=100):
     plt.show()
 
 # Optional: Run multiple simulations
-multiple_ks_simulations(y_real, n_simulations=100, seed_start=100)
+multiple_ks_simulations(y_real, n_simulations=500, seed_start=632)
