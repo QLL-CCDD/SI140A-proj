@@ -49,8 +49,8 @@ print()
 def determine_optimal_bins(data, min_expected=5, max_bins=20):
     """Determine optimal bins ensuring expected frequency >= min_expected."""
     n = len(data)
-    k_sturges = int(np.ceil(np.log2(n)) + 1)
-    n_bins = min(max_bins, max(3, k_sturges))
+    k_FD = int(pow(n, 1/3) / (2 * (np.percentile(data, 75) - np.percentile(data, 25))))
+    n_bins = min(max_bins, max(3, k_FD))
     
     # Try to find bins with sufficient expected frequency
     for k in range(n_bins, 2, -1):
@@ -331,12 +331,11 @@ def visualize_chi_test_results(y_real, y_synth, results):
 visualize_chi_test_results(y_real, y_synth, results)
 
 # ---Multiple Rounds ensure reliability---
-def robustness_check(y_real, n_simulations=100):    
+def multiple_simulation(y_real, n_simulations=100):    
     print("\n" + "=" * 70)
     print(f"ROBUSTNESS CHECK ({n_simulations} simulations)")
     print("=" * 70)
     
-    gof_p_values = []
     homogeneity_p_values = []
     ks_p_values = []
     
@@ -382,4 +381,4 @@ def robustness_check(y_real, n_simulations=100):
     plt.tight_layout()
     plt.show()
 
-robustness_check(y_real, n_simulations=100)
+multiple_simulation(y_real, n_simulations=100)
