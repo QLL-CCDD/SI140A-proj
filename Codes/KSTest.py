@@ -51,10 +51,10 @@ print()
 
 if p_value < 0.05:
     print("Result: Reject the null hypothesis at 5% significance level.")
-    print("The real data and synthetic data appear to come from DIFFERENT distributions.")
+    print("The validation data and synthetic data appear to come from DIFFERENT distributions.")
 else:
     print("Result: Fail to reject the null hypothesis at 5% significance level.")
-    print("The real data and synthetic data are consistent with coming from the SAME distribution.")
+    print("The validation data and synthetic data are consistent with coming from the SAME distribution.")
 
 # ---Visualize---
 def plot_ecdf_comparison(y_real, y_synth, bins=50):    
@@ -100,7 +100,7 @@ def plot_ecdf_comparison(y_real, y_synth, bins=50):
     print("\n" + "=" * 50)
     print("DESCRIPTIVE STATISTICS")
     print("=" * 50)
-    print(f"{'Statistic':<20} {'Real Data':<15} {'Synthetic Data':<15}")
+    print(f"{'Statistic':<20} {'Val Data':<15} {'Synthetic Data':<15}")
     print("-" * 50)
     print(f"{'Mean':<20} {np.mean(y_real):<15.4f} {np.mean(y_synth):<15.4f}")
     print(f"{'Std Dev':<20} {np.std(y_real):<15.4f} {np.std(y_synth):<15.4f}")
