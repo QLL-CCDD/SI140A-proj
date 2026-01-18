@@ -70,5 +70,5 @@ def convert_to_ratio_file_optimized(input_path, n_people):
         return None
 
 # ================= 运行 =================
-convert_to_ratio_file_optimized("Data/3/3人总.xls", 3)
-convert_to_ratio_file_optimized("Data/15/15人.xls", 15)
+# convert_to_ratio_file_optimized("Data/3/3人总.xls", 3)
+convert_to_ratio_file_optimized("Data/15/15人 0.6.xls", 15)
